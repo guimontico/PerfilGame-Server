@@ -1,20 +1,24 @@
 import { Context, Hono } from "hono";
-import { client } from "../db";
+import { supabase } from "../db";
 import { env } from "bun";
 
-const db = client;
 const game = new Hono();
 
 game.post("/:userId", async (c: Context) => {
   const { userId } = c.req.param();
   const { category, context, difficulty } = await c.req.json();
 
-  const games = await db.game.findMany({
-    where: {
-      userId: Number(userId),
-      category: category,
-    },
-  });
+  let { data: games, error } = await supabase
+    .from("game")
+    .select("*")
+    .eq("userId", userId);
+
+  if (error) {
+    console.log("error2:", error);
+  }
+
+  console.log("games:", games);
+
   if (!!games) {
     console.log("user Games:", games.map((game) => game.name).join(", "));
     const promptText = `
@@ -74,17 +78,16 @@ game.post("/:userId", async (c: Context) => {
         return gameResult;
       });
       if (!!result) {
-        // const gameResult = result["choices"][0]["message"]["content"];
-
-        const newGame = await db.game.create({
-          data: {
+        const { data, error } = await supabase.from("game").insert([
+          {
             name: !!result.name ? result.name : "no name",
-            userId: Number(userId),
+            userId: userId,
             category: category,
             difficulty: difficulty,
             context: context,
           },
-        });
+        ]);
+
         return c.json(result);
       }
     } catch (error) {
