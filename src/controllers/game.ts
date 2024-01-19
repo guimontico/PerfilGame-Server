@@ -1,26 +1,24 @@
 import { Context, Hono } from "hono";
 import { supabase } from "../db";
 import { env } from "bun";
+import { authenticateUser } from "../middlewares/middleware";
 
 const game = new Hono();
 
-game.post("/:userId", async (c: Context) => {
-  const { userId } = c.req.param();
+game.post("/", authenticateUser, async (c: Context) => {
+  const { id } = c.get("payload");
   const { category, context, difficulty } = await c.req.json();
 
   let { data: games, error } = await supabase
     .from("game")
     .select("*")
-    .eq("userId", userId);
+    .eq("userId", id);
 
   if (error) {
     console.log("error2:", error);
   }
 
-  console.log("games:", games);
-
   if (!!games) {
-    console.log("user Games:", games.map((game) => game.name).join(", "));
     const promptText = `
     Generate JSON with this rules:
      - must be in ${category} category of things,
@@ -33,7 +31,6 @@ game.post("/:userId", async (c: Context) => {
      - return the full name of the thing
      - have this JSON format: { 'name': '', 'hints': [{'id': number, 'hint': string] }`;
 
-    console.log("promptText:", promptText);
     const payload = {
       model: "gpt-3.5-turbo-1106",
       messages: [
@@ -81,7 +78,7 @@ game.post("/:userId", async (c: Context) => {
         const { data, error } = await supabase.from("game").insert([
           {
             name: !!result.name ? result.name : "no name",
-            userId: userId,
+            userId: id,
             category: category,
             difficulty: difficulty,
             context: context,
