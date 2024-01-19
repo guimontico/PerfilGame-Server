@@ -1,5 +1,5 @@
 import { MiddlewareHandler } from "hono";
-import { decode, sign, verify } from "hono/jwt";
+import { decode, verify } from "hono/jwt";
 
 import { ApiError } from "../utils/ApiError";
 import httpStatus from "http-status";

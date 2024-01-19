@@ -6,7 +6,7 @@ import { authenticateUser } from "../middlewares/middleware";
 const game = new Hono();
 
 game.post("/", authenticateUser, async (c: Context) => {
-  const { id } = c.get("payload");
+  const { id } = await c.get("payload");
   const { category, context, difficulty } = await c.req.json();
 
   let { data: games, error } = await supabase
@@ -75,7 +75,7 @@ game.post("/", authenticateUser, async (c: Context) => {
         return gameResult;
       });
       if (!!result) {
-        const { data, error } = await supabase.from("game").insert([
+        await supabase.from("game").insert([
           {
             name: !!result.name ? result.name : "no name",
             userId: id,
