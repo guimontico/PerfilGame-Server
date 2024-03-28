@@ -32,7 +32,8 @@ game.post("/", authenticateUser, async (c: Context) => {
      - have this JSON format: { 'name': '', 'hints': [{'id': number, 'hint': string] }`;
 
     const payload = {
-      model: "gpt-3.5-turbo-1106",
+      model: "gpt-4-turbo-preview",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
@@ -71,6 +72,7 @@ game.post("/", authenticateUser, async (c: Context) => {
       }
 
       const result = await response.json().then((data) => {
+        console.log("data:", data);
         const gameResult = JSON.parse(data["choices"][0]["message"]["content"]);
         return gameResult;
       });
