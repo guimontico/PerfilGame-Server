@@ -32,7 +32,7 @@ game.post("/", authenticateUser, async (c: Context) => {
      - have this JSON format: { 'name': '', 'hints': [{'id': number, 'hint': string] }`;
 
     const payload = {
-      model: "gpt-4-turbo-preview",
+      model: "gpt-4o",
       response_format: { type: "json_object" },
       messages: [
         {
